@@ -15,6 +15,10 @@ class CreateCitiesTable extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('province_id');
+            $table->string('name');
+            $table->string('type');
+            $table->string('postal_code');
             $table->timestamps();
         });
     }
