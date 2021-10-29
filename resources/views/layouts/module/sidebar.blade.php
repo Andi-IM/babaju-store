@@ -13,12 +13,12 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('product.index') }}">
+            <a class="nav-link" href="#">
                 <i class="nav-icon icon-drop"></i> Produk
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('orders.index') }}">
+            <a class="nav-link" href="#">
                 <i class="nav-icon icon-drop"></i> Pesanan
             </a>
         </li>
@@ -28,12 +28,12 @@
             </a>
             <ul class="nav-dropdown-items">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('report.order') }}">
+                    <a class="nav-link" href="#">
                         <i class="nav-icon icon-puzzle"></i> Order
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('report.return') }}">
+                    <a class="nav-link" href="#">
                         <i class="nav-icon icon-puzzle"></i> Return
                     </a>
                 </li>

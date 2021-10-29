@@ -22,9 +22,8 @@
             @include('layouts.module.sidebar')
             <button class="sidebar-minimizer brand-minimizer" type="button"></button>
         </div>
+        @yield('content')
     </div>
-
-    @yield('content')
 
     <footer class="app-footer">
         <div>
