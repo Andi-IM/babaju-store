@@ -19,7 +19,7 @@
                                 <h4 class="card-title">
                                     List Product
                                     <div class="float-right">
-                                        <a href="#" class="btn btn-danger btn-sm">Mass Upload</a>
+                                        <a href="{{ route('product.saveBulk') }}" class="btn btn-danger btn-sm">Mass Upload</a>
                                         <a href="{{ route('product.create') }}" class="btn btn-primary btn-sm">Tambah</a>
                                     </div>
                                 </h4>
