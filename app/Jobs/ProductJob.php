@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class ProductJob implements ShouldQueue
@@ -37,6 +38,7 @@ class ProductJob implements ShouldQueue
     public function handle()
     {
         $files = (new ProductImport)->toArray(storage_path('app/public/uploads/' . $this->fileName));
+
         foreach ($files[0] as $row) {
             $explodeURL = explode('/', $row[4]);
             $explodeExtension = explode('.', end($explodeURL));

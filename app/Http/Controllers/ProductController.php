@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Jobs\ProductJob;
 use App\Models\Category;
 use App\Models\Product;
+use DebugBar\DebugBar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use File;
+use Illuminate\Support\Facades\File;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -76,8 +78,8 @@ class ProductController extends Controller
     public function massUpload(Request $request)
     {
         $this->validate($request, [
-            'category_id' => 'required|exist:categories,id',
-            'files' => 'required|mimes:xlsx'
+            'category_id' => 'required|exists:categories,id',
+            'file' => 'required|mimes:xlsx'
         ]);
 
         if ($request->hasFile('file')) {
@@ -85,6 +87,7 @@ class ProductController extends Controller
             $fileName = time() . '-product.' . $file->getClientOriginalExtension();
             $file->storeAs('public/uploads', $fileName);
 
+            // membuat jadwal untuk proses file
             ProductJob::dispatch($request->category_id, $fileName);
             return redirect()->back()->with(['success' => 'Upload Produk dijadwalkan']);
         }
