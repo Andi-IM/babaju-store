@@ -5,11 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class OrderReturn extends Model
 {
     use HasFactory;
-
-    // UNTUK MENGIZINKAN MENYIMPAN SEMUA FIELD PADA DATA
     protected $guarded = [];
     protected $appends = ['status_label'];
 
@@ -17,7 +15,9 @@ class Payment extends Model
     {
         if ($this->status == 0) {
             return '<span class="badge badge-secondary">Menunggu Konfirmasi</span>';
+        } elseif ($this->status == 2) {
+            return '<span class="badge badge-danger">Ditolak</span>';
         }
-        return '<span class="badge badge-success">Diterima</span>';
+        return '<span class="badge badge-success">Selesai</span>';
     }
 }

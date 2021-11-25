@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Ecommerce;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderReturn;
 use App\Models\Payment;
 use Carbon\Carbon;
 use DB;
 use Gate;
 use Illuminate\Http\Request;
+use PDF;
 
 class OrderController extends Controller
 {
@@ -23,9 +25,16 @@ class OrderController extends Controller
     {
         $order = Order::with(['district.city.province', 'details', 'details.product', 'payment'])
             ->where('invoice', $invoice)->first();
+
+        // JADI KITA CEK, VALUE forUser() NYA ADALAH CUSTOMER YANG SEDANG LOGIN
+        // DAN ALLOW NYA MEMINTA DUA PARAMETER
+        // PERTAMA ADALAH NAMA GATE YANG DIBUAT SEBELUMNYA DAN YANG KEDUA ADALAH DATA ORDER DARI QUERY DI ATAS
         if (Gate::forUser(auth()->guard('customer')->user())->allows('order-view', $order)) {
+            //JIKA HASILNYA TRUE, MAKA TAMPILKAN DATANYA
             return view('ecommerce.order.view', compact('order'));
         }
+
+        //JIKA FALSE, MAKA REDIRECT
         return redirect(route('customer.orders'))->with(['error' => 'Anda Tidak Diizinkan Untuk Mengakses Order Orang Lain!']);
     }
 
@@ -96,23 +105,33 @@ class OrderController extends Controller
 
     public function acceptOrder(Request $request)
     {
+        // CARI DATA ORDER BERDASARKAN ID
         $order = Order::find($request->orderId);
+
+        // VALIDASI KEPEMILIKAN
         if (!\Gate::forUser(auth()->guard('customer')->user())->allows('order-view', $order)) {
             return redirect()->back()->with(['error' => 'Bukan Pesanan Kamu']);
         }
 
+        // UBAH STATUSNYA MENJADI 4
         $order->update(['status' => 4]);
+
+        // REDIRECT KEMBALI DENGAN MENAMPILKAN ALERT SUCCESS
         return redirect()->back()->with(['success' => 'Pesan Dikonfirmasi']);
     }
 
     public function returnForm($invoice)
     {
+        // LOAD DATA BERDASARKAN INVOICE
         $order = Order::where('invoice', $invoice)->first();
+
+        // LOAD VIEW return.blade.php DAN PASSING DATA ORDER
         return view('ecommerce.orders.return', compact('order'));
     }
 
     public function processReturn(Request $request, $id)
     {
+        // LAKUKAN VALIDASI DATA
         $this->validate($request, [
             'reason' => 'required|string',
             'refund_transfer' => 'required|string',
@@ -121,6 +140,7 @@ class OrderController extends Controller
 
         //CARI DATA RETURN BERDASARKAN order_id YANG ADA DITABLE ORDER_RETURNS NANTINYA
         $return = OrderReturn::where('order_id', $id)->first();
+
         //JIKA DITEMUKAN, MAKA TAMPILKAN NOTIFIKASI ERROR
         if ($return) return redirect()->back()->with(['error' => 'Permintaan Refund Dalam Proses']);
 
@@ -128,8 +148,10 @@ class OrderController extends Controller
         if ($request->hasFile('photo')) {
             //GET FILE
             $file = $request->file('photo');
+
             //GENERATE NAMA FILE BERDASARKAN TIME DAN STRING RANDOM
             $filename = time() . Str::random(5) . '.' . $file->getClientOriginalExtension();
+
             //KEMUDIAN UPLOAD KE DALAM FOLDER STORAGE/APP/PUBLIC/RETURN
             $file->storeAs('public/return', $filename);
 
@@ -141,8 +163,25 @@ class OrderController extends Controller
                 'refund_transfer' => $request->refund_transfer,
                 'status' => 0
             ]);
+
             //LALU TAMPILKAN NOTIFIKASI SUKSES
             return redirect()->back()->with(['success' => 'Permintaan Refund Dikirim']);
         }
+    }
+
+    public function pdf($invoice)
+    {
+        //GET DATA ORDER BERDASRKAN INVOICE
+        $order = Order::with(['district.city.province', 'details', 'details.product', 'payment'])
+            ->where('invoice', $invoice)->first();
+        //MENCEGAH DIRECT AKSES OLEH USER, SEHINGGA HANYA PEMILIKINYA YANG BISA MELIHAT FAKTURNYA
+        if (!\Gate::forUser(auth()->guard('customer')->user())->allows('order-view', $order)) {
+            return redirect(route('customer.view_order', $order->invoice));
+        }
+
+        //JIKA DIA ADALAH PEMILIKNYA, MAKA LOAD VIEW BERIKUT DAN PASSING DATA ORDERS
+        $pdf = PDF::loadView('ecommerce.orders.pdf', compact('order'));
+        //KEMUDIAN BUKA FILE PDFNYA DI BROWSER
+        return $pdf->stream();
     }
 }

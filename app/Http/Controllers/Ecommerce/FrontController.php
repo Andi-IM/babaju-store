@@ -71,13 +71,19 @@ class FrontController extends Controller
 
     public function customerSettingForm()
     {
+        // MENGAMBIL DATA CUSTOMER YANG SEDANG LOGIN
         $customer = auth()->guard('customer')->user()->load('district');
+
+        // GET DATA PROPINSI UNTUK DITAMPILKAN PADA SELECT BOX
         $provinces = Province::orderBy('name', 'ASC')->get();
+
+        // LOAD VIEW setting.blade.php DAN PASSING DATA CUSTOMER - PROVINCES
         return view('ecommerce.setting', compact('customer', 'provinces'));
     }
 
     public function customerUpdateProfile(Request $request)
     {
+        // VALIDASI DATA YANG DIKIRIM
         $this->validate($request, [
            'name' => 'required|string|max:100',
             'phone_name' => 'required|max:15',
@@ -86,29 +92,50 @@ class FrontController extends Controller
             'password' => 'nullable|string|min:6'
         ]);
 
+        // AMBIL DATA CUSTOMER YANG SEDANG LOGIN
         $user = auth()->guard('customer')->user();
+
+        // AMBIL 4 DATA TERAKHIR YANG DIKIRIM DARI FORM
         $data = $request->only('name', 'phone_number', 'address', 'district_id');
 
-        if ($request->getPassword() != ''){
+        // CEK PASSWORD
+        if ($request->getPassword() != '')
+        {
+            // TAMBAHKAN KE DALAM ARRAY
             $data['password'] = $request->getPassword();
         }
 
+        // UPDATE DATANYA
         $user->update($data);
+
+        // DAN REDIRECT KEMBALI DENGAN MENGIRIMKAN PESAN BERHASIL
         return redirect()->back()->with(['success' => 'Profil telah diperbarui!']);
     }
 
     public function referralProduct($user, $product)
     {
+        // KITA MERGE USERID DAN PRODUCTID
         $code = $user . '-' . $product;
+
+        // FIND PRODUCT BERDASARKAN PRODUCTID
         $product = Product::find($product);
+
+        // BUAT COOKIE DENGAN NAMA DW-AFILIASI DAN VALUENYA ADALAH CODE YANG SUDAH DI-MERGE
         $cookie = cookie('babaju-afiliasi', json_encode($code), 2880);
+
+        // KEMUDIAN REDIRECT KE HALAMAN SHOW PRODUCT DAN MENGIRIMKAN COOKIE KE BROWSER
         return redirect(route('front.show_product', $product->slug())-cookie($cookie));
     }
 
     public function listCommission()
     {
+        // AMBIL DATA USER YANG LOGIN
         $user = auth()->guard('customer')->user();
+
+        // QUERY BERDASARKAN ID USER DARI DATA REF YANG ADA DIORDER DENGAN STATUS 4 ATAU SELESAI
         $orders = Order::where('ref', $user->id)->where('status', 4)->paginate(10);
+
+        // LOAD VIEW AFFILIATE.BLADE.PHP DAN PASSING DATA ORDERS
         return view('ecommerce.affiliate', compact('orders'));
     }
 }

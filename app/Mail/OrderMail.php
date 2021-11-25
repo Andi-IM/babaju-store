@@ -15,6 +15,7 @@ class OrderMail extends Mailable
 
     /**
      * Create a new message instance.
+     * MEMINTA DATA ORDER
      *
      * @return void
      */
@@ -30,6 +31,9 @@ class OrderMail extends Mailable
      */
     public function build()
     {
+        // KIRIM EMAIL DENGAN SUBJECT BERIKUT
+        // TEMPLATE YANG DIGUNAKAN ADALAH order.blade.php YANG ADA DI FOLDER EMAILS
+        // DAN PASSING DATA ORDER KE FILE order.blade.php
         return $this->subject('Pesanan Anda dikirim ' . $this->order->invoice)
             ->view('emails.order')
             ->with([

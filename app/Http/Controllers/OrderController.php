@@ -11,14 +11,15 @@ class OrderController extends Controller
 {
     public function index()
     {
-        //QUERY UNTUK MENGAMBIL SEMUA PESANAN DAN LOAD DATA YANG BERELASI MENGGUNAKAN EAGER LOADING
-        //DAN URUTANKAN BERDASARKAN CREATED_AT
+        // QUERY UNTUK MENGAMBIL SEMUA PESANAN DAN LOAD DATA YANG BERELASI MENGGUNAKAN EAGER LOADING
+        // DAN URUTANKAN BERDASARKAN CREATED_AT
         $orders = Order::with(['customer.district.city.province'])
+            ->withCount('return')
             ->orderBy('created_at', 'DESC');
 
-        //JIKA Q UNTUK PENCARIAN TIDAK KOSONG
+        // JIKA Q UNTUK PENCARIAN TIDAK KOSONG
         if (request()->q != '') {
-            //MAKA DIBUAT QUERY UNTUK MENCARI DATA BERDASARKAN NAMA, INVOICE DAN ALAMAT
+            // MAKA DIBUAT QUERY UNTUK MENCARI DATA BERDASARKAN NAMA, INVOICE DAN ALAMAT
             $orders = $orders->where(function($q) {
                 $q->where('customer_name', 'LIKE', '%' . request()->q . '%')
                     ->orWhere('invoice', 'LIKE', '%' . request()->q . '%')
@@ -26,7 +27,7 @@ class OrderController extends Controller
             });
         }
 
-        //JIKA STATUS TIDAK KOSONG
+        // JIKA STATUS TIDAK KOSONG
         if (request()->status != '') {
             //MAKA DATA DIFILTER BERDASARKAN STATUS
             $orders = $orders->where('status', request()->status);
@@ -52,26 +53,46 @@ class OrderController extends Controller
 
     public function acceptPayment($invoice)
     {
-        //MENGAMBIL DATA CUSTOMER BERDASARKAN INVOICE
+        // MENGAMBIL DATA CUSTOMER BERDASARKAN INVOICE
         $order = Order::with(['payment'])->where('invoice', $invoice)->first();
-        //UBAH STATUS DI TABLE PAYMENTS MELALUI ORDER YANG TERKAIT
+
+        // UBAH STATUS DI TABLE PAYMENTS MELALUI ORDER YANG TERKAIT
         $order->payment()->update(['status' => 1]);
-        //UBAH STATUS ORDER MENJADI PROSES
+
+        // UBAH STATUS ORDER MENJADI PROSES
         $order->update(['status' => 2]);
+
         //REDIRECT KE HALAMAN YANG SAMA.
         return redirect(route('orders.view', $order->invoice));
     }
 
     public function shippingOrder(Request $request)
     {
-        //MENGAMBIL DATA ORDER BERDASARKAN ID
+        // MENGAMBIL DATA ORDER BERDASARKAN ID
         $order = Order::with(['customer'])->find($request->order_id);
-        //UPDATE DATA ORDER DENGAN MEMASUKKAN NOMOR RESI DAN MENGUBAH STATUS MENJADI DIKIRIM
+
+        // UPDATE DATA ORDER DENGAN MEMASUKKAN NOMOR RESI DAN MENGUBAH STATUS MENJADI DIKIRIM
         $order->update(['tracking_number' => $request->tracking_number, 'status' => 3]);
-        //KIRIM EMAIL KE PELANGGAN TERKAIT
+
+        // KIRIM EMAIL KE PELANGGAN TERKAIT
         Mail::to($order->customer->email)->send(new OrderMail($order));
-        //REDIRECT KEMBALI
+
+        // REDIRECT KEMBALI
         return redirect()->back();
     }
 
+    public function return($invoice)
+    {
+        $order = Order::with(['return', 'customer'])->where('invoice', $invoice)->first();
+        return view('orders.return', compact('order'));
+    }
+
+    public function approveReturn(Request $request)
+    {
+        $this->validate($request, ['status' => 'required']); //validasi status
+        $order = Order::find($request->order_id); //query berdasarkan order_id
+        $order->return()->update(['status' => $request->status]); //update status yang ada di table order_returns melalui order
+        $order->update(['status' => 4]); //update status yang ada di table orders
+        return redirect()->back();
+    }
 }

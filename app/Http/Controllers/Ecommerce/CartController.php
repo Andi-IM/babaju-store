@@ -13,7 +13,7 @@ use App\Models\Product;
 use App\Models\Province;
 use http\Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cookie;
+use Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mail;
@@ -44,9 +44,7 @@ class CartController extends Controller
         if ($carts && array_key_exists($request->product_id, $carts)) {
             // MAKA UPDATE QTY-NYA BERDASARKAN product_id YANG DIJADIKAN KEY ARRAY
             $carts[$request->product_id]['qty'] += $request->qty;
-        }
-        else
-        {
+        } else {
             // SELAIN ITU, BUAT QUERY UNTUK MENGAMBIL PRODUK BERDASARKAN product_id
             $product = Product::find($request->product_id);
 
@@ -88,16 +86,12 @@ class CartController extends Controller
 
         // KEMUDIAN LOOPING DATA product_id, KARENA NAMENYA ARRAY PADA VIEW SEBELUMNYA
         // MAKA DATA YANG DITERIMA ADALAH ARRAY SEHINGGA BISA DI-LOOPING
-        foreach ($request->product_id as $key => $row)
-        {
+        foreach ($request->product_id as $key => $row) {
             // DI CHECK, JIKA QTY DENGAN KEY YANG SAMA DENGAN product_idd = 0
-            if ($request->qty[$key] == 0)
-            {
+            if ($request->qty[$key] == 0) {
                 // MAKA DATA TERSEBUT DIHAPUS DARI ARRAY
                 unset($carts[$row]);
-            }
-            else
-            {
+            } else {
                 // SELAIN ITU MAKA AKAN DIPERBAHARUI
                 $carts[$row]['qty'] = $request->qty[$key];
             }
@@ -164,12 +158,14 @@ class CartController extends Controller
             // CHECK DATA CUSTOMER BERDASARKAN EMAIL
             $customer = Cutomer::where('email', $request->email)->first();
 
+            // GET COOKIE DARI BROWSER
             $affiliate = json_decode(request()->cookie('babaju-affiliasi'));
+
+            // EXPLODE DATA COOKIE UNTUK MEMISAHKAN USERID DAN PRODUCTID
             $explodeAffiliate = explode('-', $affiliate);
 
             // JIKA DIA TIDAK LOGIN DAN DATA CUSTOMERNYA ADA
-            if (!auth()->guard('customer')->check() && $customer)
-            {
+            if (!auth()->guard('customer')->check() && $customer) {
                 // MAKA REDIRECT DAN TAMPILKAN INSTRUKSI UNTUK LOGIN
                 return redirect()->back()->with(['error' => 'Silakan Login Terlebih Dahulu!']);
             }
@@ -182,69 +178,74 @@ class CartController extends Controller
                 return $q['qty'] * $q['product_price'];
             });
 
-            if (!auth()->guard('customer')->check())
-            {
+            // UNTUK MENGHINDARI DUPLICATE CUSTOMER, MASUKKAN QUERY UNTUK MENAMBAHKAN CUSTOMER BARU
+            // SEBENARNYA VALIDASINYA BISA DIMASUKKAN PADA METHOD VALIDATION DIATAS,
+            // TAPI TIDAK MENGAPA UNTUK MENCOBA CARA BERBEDA
+            if (!auth()->guard('customer')->check()) {
                 $password = Str::random(8);
 
                 // SIMPAN DATA CUSTOMER BARU
                 $customer = Customer::create([
-                   'name' => $request->customer_name,
-                   'email' => $request->email,
-                   'password' => $password,
-                   'phone_number' => $request->customer_phone,
-                   'address' => $request->customer_address,
-                   'district_id' => $request->district_id,
-                   'activate_token' => Str::random(30),
-                   'status' => false
+                    'name' => $request->customer_name,
+                    'email' => $request->email,
+                    'password' => $password,
+                    'phone_number' => $request->customer_phone,
+                    'address' => $request->customer_address,
+                    'district_id' => $request->district_id,
+                    'activate_token' => Str::random(30),
+                    'status' => false
                 ]);
-
-                // SIMPAN DATA ORDER
-                $order = Order::create([
-                    // INVOICENYA KITA BUAT DARI STRING RANDOM DAN WAKTU
-                    'invoice' => Str::random(4) . '-' . time(),
-                    'customer_id' => $customer->id,
-                    'customer_name' => $customer->name,
-                    'customer_phone' => $customer->customer_phone,
-                    'customer_address' => $customer->customer_address,
-                    'district_id' => $customer->district_id,
-                    'subtotal' => $subtotal,
-                    'ref' => $affiliate != '' && $explodeAffiliate[0] != auth()->guard('customer')->user()->id ? $affiliate:NULL
-                ]);
-
-                // LOOPING DATA DI CARTS
-                foreach ($carts as $row) {
-                    //AMBIL DATA PRODUK BERDASARKAN product_id
-                    $product = Product::find($row['product_id']);
-
-                    // SIMPAN DETAIL ORDER
-                    OrderDetail::create([
-                        'order_id' => $order->id,
-                        'product_id' => $row['product_id'],
-                        'price' => $row['product_price'],
-                        'qty' => $row['qty'],
-                        'weight' => $product->weight
-                    ]);
-                }
-
-                // TIDAK TERJADI ERROR, MAKA COMMIT DATANYA UNTUK MENINFORMASIKAN BAHWA DATA SUDAH FIX UNTUK DISIMPAN
-                DB::commit();
-
-                $carts = [];
-
-                //KOSONGKAN DATA KERANJANG DI COOKIE
-                $cookie = cookie('babaju-carts', json_encode($carts), 2880);
-
-                Cookie::queue(Cookie::forget('babaju-affiliasi'));
-
-                if (!auth()->guard('customer')->check())
-                {
-                    Mail::to($request->email)->send(new CustomerRegisterMail($customer, $password));
-                }
-
-                // REDIRECT KE HALAMAN FINISH TRANSAKSI
-                return redirect(route('front.finish_checkout', $order->invoice))->cookie($cookie);
             }
-        }catch (Exception $e){
+
+            // SIMPAN DATA ORDER
+            $order = Order::create([
+                // INVOICENYA KITA BUAT DARI STRING RANDOM DAN WAKTU
+                'invoice' => Str::random(4) . '-' . time(),
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
+                'customer_phone' => $customer->customer_phone,
+                'customer_address' => $customer->customer_address,
+                'district_id' => $customer->district_id,
+                'subtotal' => $subtotal,
+                'ref' => $affiliate != '' && $explodeAffiliate[0] != auth()->guard('customer')->user()->id ? $affiliate : NULL
+            ]);
+            // CODE DIATAS MELAKUKAN PENGECEKAN JIKA USERID NYA BUKAN DIRINYA SENDIRI, MAKA AFILIASINYA DISIMPAN
+
+            // LOOPING DATA DI CARTS
+            foreach ($carts as $row) {
+                //AMBIL DATA PRODUK BERDASARKAN product_id
+                $product = Product::find($row['product_id']);
+
+                // SIMPAN DETAIL ORDER
+                OrderDetail::create([
+                    'order_id' => $order->id,
+                    'product_id' => $row['product_id'],
+                    'price' => $row['product_price'],
+                    'qty' => $row['qty'],
+                    'weight' => $product->weight
+                ]);
+            }
+
+            // TIDAK TERJADI ERROR, MAKA COMMIT DATANYA UNTUK MENINFORMASIKAN BAHWA DATA SUDAH FIX UNTUK DISIMPAN
+            DB::commit();
+
+            $carts = [];
+
+            //KOSONGKAN DATA KERANJANG DI COOKIE
+            $cookie = cookie('babaju-carts', json_encode($carts), 2880);
+
+            // KEMUDIAN HAPUS DATA COOKIE AFILIASI
+            Cookie::queue(Cookie::forget('babaju-affiliasi'));
+
+            // EMAIL UNTUK CUSTOMER BARU
+            if (!auth()->guard('customer')->check()) {
+                Mail::to($request->email)->send(new CustomerRegisterMail($customer, $password));
+            }
+
+            // REDIRECT KE HALAMAN FINISH TRANSAKSI
+            return redirect(route('front.finish_checkout', $order->invoice))->cookie($cookie);
+
+        } catch (Exception $e) {
             // JIKA TERJADI ERROR, MAKA ROLLBACK DATANYA
             DB::rollBack();
 
