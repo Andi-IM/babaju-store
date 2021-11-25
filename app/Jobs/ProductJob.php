@@ -21,7 +21,7 @@ class ProductJob implements ShouldQueue
 
     /**
      * Create a new job instance.
-     *
+     * DISPATCH MENGIRIMKAN 2 PARAMETER [$category, $filename]
      * @return void
      */
     public function __construct($category, $filename)
@@ -37,15 +37,20 @@ class ProductJob implements ShouldQueue
      */
     public function handle()
     {
+        // IMPORT DATA EXCEL TADI YANG SUDAH DISIMPAN DI STORAGE, KEMUDIAN CONVERT MENJADI ARRAY
         $files = (new ProductImport)->toArray(storage_path('app/public/uploads/' . $this->fileName));
 
         foreach ($files[0] as $row) {
+
+            // FORMATTING URLNYA UNTUK MENGAMBIL FILE-NAMENYA BESERTA EXTENSION
             $explodeURL = explode('/', $row[4]);
             $explodeExtension = explode('.', end($explodeURL));
             $fileName = time() . Str::random(6) . '.' . end($explodeExtension);
 
+            // DOWNLOAD GAMBAR TERSEBUT DARI URL TERKAIT
             file_put_contents(storage_path('app/public/products') . '/' . $fileName, file_get_contents($row[4]));
 
+            // KEMUDIAN SIMPAN DATANYA DI DATABASE
             Product::create([
                 'name' => $row[0],
                 'slug' => $row[0],
@@ -58,6 +63,8 @@ class ProductJob implements ShouldQueue
 
             ]);
         }
+
+        // JIKA PROSESNYA SUDAH SELESAI MAKA FILE YANG ADA DI STORAGE AKAN DIHAPUS
         File::delete(storage_path('app/public/uploads' . $this->fileName));
     }
 }

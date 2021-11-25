@@ -21,6 +21,7 @@ class CustomerRegisterMail extends Mailable
      */
     public function __construct(Customer $customer, $randomPassword)
     {
+        // MEMINTA DATA BERUPA INFORMASI CUSTOMER DAN RANDOM PASSWORD YANG BELUM DI-ENCRYPT
         $this->customer = $customer;
         $this->randomPassword = $randomPassword;
     }
@@ -32,6 +33,7 @@ class CustomerRegisterMail extends Mailable
      */
     public function build()
     {
+        // MENGESET SUBJECT EMAIL, VIEW MANA YANG AKAN DI-LOAD DAN DATA APA YANG AKAN DIPASSING KE VIEW
         return $this->subject('Verifikasi Pendaftaran Anda')
             ->view('emails.register')
             ->with([

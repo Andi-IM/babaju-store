@@ -13,7 +13,9 @@ class AddFieldStatusToProductsTable extends Migration
      */
     public function up()
     {
+        // MEMASUKKAN DATA KE TABLE PRODUCTS
         Schema::table('products', function (Blueprint $table) {
+            // MENAMBAHKAN FIELD BARU DENGAN TIPE DATA BOOLEAN DAN DISIMPAN SETELAH FIELD WEIGHT
             $table->boolean('status')->default(true)->after('weight');
         });
     }
@@ -25,6 +27,7 @@ class AddFieldStatusToProductsTable extends Migration
      */
     public function down()
     {
+        // MENGHAPUS FIELD STATUS APABILA ROLLBACK TABLE PRODUCTS DIJALANKAN
         Schema::table('products', function (Blueprint $table) {
             $table->dropColumn('status');
         });

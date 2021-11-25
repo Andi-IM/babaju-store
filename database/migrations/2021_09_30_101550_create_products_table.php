@@ -17,6 +17,8 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug');
+
+            //category_id merujuk ke table categories
             $table->unsignedBigInteger('category_id');
             $table->text('description')->nullable();
             $table->string('image');

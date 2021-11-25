@@ -17,10 +17,12 @@ class CreateOrdersTable extends Migration
             $table->id();
             $table->string('invoice')->unique();
             $table->string('customer_id');
+
+            // Dibuat sebagai salinan informasi dari data customer
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_address');
-            $table->unsignedBigInteger('district_id');
+            $table->unsignedBigInteger('district_id'); //FIELD INI AKAN MERUJUK KE TABLE districts
             $table->integer('subtotal');
             $table->timestamps();
         });

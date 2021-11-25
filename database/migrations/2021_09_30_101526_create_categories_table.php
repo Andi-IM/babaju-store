@@ -13,9 +13,16 @@ class CreateCategoriesTable extends Migration
      */
     public function up()
     {
+        // Membuat Table [categories]
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
+
+            // string = VARCHAR
             $table->string('name');
+
+            // menjadikan category ini memiliki anak kategori
+            // parent_id yang memiliki nilai adalah anak kategori
+            // parent_id yang null bukan anak kategori.
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->string('slug');
             $table->timestamps();
@@ -29,6 +36,7 @@ class CreateCategoriesTable extends Migration
      */
     public function down()
     {
+        // menghapus tabel jika dilakukan rollback
         Schema::dropIfExists('categories');
     }
 }

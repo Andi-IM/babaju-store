@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+/**
+ * Route yang berkaitan dengan halaman muka (tidak terikat dengan customer).
+ */
 // Route::get('/',[FrontController::class, 'index'])->name('front.index');
 Route::get('/product', [FrontController::class, 'product'])->name('front.product');
 Route::get('/category/{slug}', [FrontController::class, 'categoryProduct'])->name('front.category');
@@ -36,11 +39,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+/**
+ * Route yang berkaitan dengan member
+ * semua route akan diawali oleh endpoint /member
+ * contoh : member/login
+ */
 Route::group(['prefix' => 'member', 'namespace' => 'Ecommerce'], function () {
     Route::get('login', [\App\Http\Controllers\Ecommerce\LoginController::class, 'loginForm'])->name('customer.login');
     Route::post('login', [\App\Http\Controllers\Ecommerce\LoginController::class, 'login'])->name('customer.post_login');
     Route::get('verify/{token}', [FrontController::class, 'verifyCustomerRegistration'])->name('customer.verify');
 
+    // member/customer/...
     Route::group(['middleware' => 'customer'], function() {
         Route::get('dashboard', [\App\Http\Controllers\Ecommerce\LoginController::class, 'dashboard'])->name('customer.dashboard');
         Route::get('logout', [\App\Http\Controllers\Ecommerce\LoginController::class, 'logout'])->name('customer.logout');
@@ -62,7 +71,13 @@ Route::group(['prefix' => 'member', 'namespace' => 'Ecommerce'], function () {
     });
 });
 
-Auth::routes();
+Auth::routes(); // Routing yang mencakup semua routing yang berkaitan dengan authentication
+
+/**
+ * Route yang berkaitan dengan admin
+ * route akan diawali dengan endpoint administrator
+ * contoh : administrator/home
+ */
 Route::group(['prefix' => 'administrator', 'middleware' => 'auth'], function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::resource('category', CategoryController::class)->except(['create', 'show']);
@@ -70,6 +85,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'auth'], function () 
     Route::get('/product/bulk', [ProductController::class, 'massUploadForm'])->name('product.bulk');
     Route::post('/product/bulk', [ProductController::class, 'massUpload'])->name('product.saveBulk');
 
+    // administrator/orders/...
     Route::group(['prefix' => 'orders'], function (){
         Route::get('/', [\App\Http\Controllers\OrderController::class,'index'])->name('orders.index');
         Route::get('/{invoice}', [\App\Http\Controllers\OrderController::class, 'view'])->name('orders.view');
@@ -80,6 +96,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'auth'], function () 
         Route::post('/return', [\App\Http\Controllers\OrderController::class, 'approveReturn'])->name('orders.approve_return');
     });
 
+    // administrator/reports/...
     Route::group(['prefix' => 'reports'], function (){
         Route::get('/order', [HomeController::class, 'orderReport'])->name('report.order');
         Route::get('/order/pdf/{daterange}', [HomeController::class, 'orderReportPdf'])->name('report.order_pdf');

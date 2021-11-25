@@ -14,8 +14,11 @@ class FrontController extends Controller
 {
     public function index()
     {
-        //MEMBUAT QUERY UNTUK MENGAMBIL DATA PRODUK YANG DIURUTKAN BERDASARKAN TGL TERBARU
+        // MEMBUAT QUERY UNTUK MENGAMBIL DATA PRODUK YANG DIURUTKAN BERDASARKAN TGL TERBARU
+        // DI LOAD 10 DATA SETIAP PAGENYA
         $products = Product::orderBy('created_at', 'DESC')->paginate(10);
+
+        // LOAD VIEW INDEX.BLADE.PHP DAN PASSING DATA DARI VARIABLE PRODUCTS
         return view('ecommerce.index', compact('products'));
     }
 
@@ -29,27 +32,40 @@ class FrontController extends Controller
 
     public function categoryProduct($slug)
     {
+        // JADI QUERYNYA ADALAH KITA CARI DULU KATEGORI BERDASARKAN SLUG, SETELAH DATANYA DITEMUKAN
+        // MAKA SLUG AKAN MENGAMBIL DATA PRODUCT YANG BERELASI MENGGUNAKAN METHOD product() YANG TELAH DIDEFINISIKAN
+        // PADA FILE category.php SERTA DIURUTKAN BERDASARKAN created_at DAN DI-LOAD 12 DATA PER SEKALI LOAD
         $products = Category::where('slug', $slug)->first()->product()->orderBy('created_at','DESC')->paginate(12);
+        // LOAD KE VIEW product.blade.php
         return view('ecommerce.product', compact('products'));
     }
 
     public function show($slug)
     {
+        // QUERY UNTUK MENGAMBIL SINGLE DATA BERDASARKAN SLUG-NYA
         $product = Product::with('category')->where('slug', $slug)->first();
+
+        // LOAD VIEW SHOW.BLADE.PHP DAN PASSING DATA PRODUCT
         return view('ecommerce.show', compact('product'));
     }
 
     public function verifyCustomerRegistration($token)
     {
+        // JADI KITA BUAT QUERY UNTUK MENGMABIL DATA USER BERDASARKAN TOKEN YANG DITERIMA
         $customer = Customer::where('activate_token', $token)->first();
         if ($customer){
+            // JIKA ADA MAKA DATANYA DIUPDATE DENGNA MENGOSONGKAN TOKENNYA DAN STATUSNYA JADI AKTIF
             $customer->update([
                'activate_token' => null,
                'status' => 1
             ]);
 
+            // REDIRECT KE HALAMAN LOGIN DENGAN MENGIRIMKAN FLASH SESSION SUCCESS
             return redirect(route('customer.login'))->with(['success'=>'Verifikasi Berhasil, Silakan Login' ]);
         }
+
+        // JIKA TIDAK ADA, MAKA REDIRECT KE HALAMAN LOGIN
+        // DENGAN MENGIRIMKAN FLASH SESSION ERROR
         return redirect(route('customer.login'))->with(['error' => 'Verifikasi Gagal Silakan Coba lagi']);
     }
 
