@@ -29,20 +29,17 @@
                 <div class="row">
                     <div class="col-lg-8">
                         <h3>Informasi Pengiriman</h3>
+
                         @if (session('error'))
                             <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
+                        @endif
 
-                    <!-- REMOVE DULU VALUE ACTION-NYA JIKA INGIN MELIHATNYA DI BROWSER -->
-                        <!-- KARENA ROUTE NAME front.store_checkout BELUM DIBUAT -->
                         <form class="row contact_form" action="{{ route('front.store_checkout') }}" method="post"
                               novalidate="novalidate">
                             @csrf
                             <div class="col-md-12 form-group p_star">
                                 <label for="">Nama Lengkap</label>
                                 <input type="text" class="form-control" id="first" name="customer_name" required>
-
-                                <!-- UNTUK MENAMPILKAN JIKA TERDAPAT ERROR VALIDASI -->
                                 <p class="text-danger">{{ $errors->first('customer_name') }}</p>
                             </div>
                             <div class="col-md-6 form-group p_star">
@@ -71,15 +68,12 @@
                                 <label for="">Propinsi</label>
                                 <select class="form-control" name="province_id" id="province_id" required>
                                     <option value="">Pilih Propinsi</option>
-                                    <!-- LOOPING DATA PROVINCE UNTUK DIPILIH OLEH CUSTOMER -->
                                     @foreach ($provinces as $row)
                                         <option value="{{ $row->id }}">{{ $row->name }}</option>
                                     @endforeach
                                 </select>
                                 <p class="text-danger">{{ $errors->first('province_id') }}</p>
                             </div>
-
-                            <!-- ADAPUN DATA KOTA DAN KECAMATAN AKAN DI RENDER SETELAH PROVINSI DIPILIH -->
                             <div class="col-md-12 form-group p_star">
                                 <label for="">Kabupaten / Kota</label>
                                 <select class="form-control" name="city_id" id="city_id" required>
@@ -94,49 +88,46 @@
                                 </select>
                                 <p class="text-danger">{{ $errors->first('district_id') }}</p>
                             </div>
-                            <!-- ADAPUN DATA KOTA DAN KECAMATAN AKAN DI RENDER SETELAH PROVINSI DIPILIH -->
-
-                            <div class="col-lg-4">
-                                <div class="order_box">
-                                    <h2>Ringkasan Pesanan</h2>
-                                    <ul class="list">
-                                        <li>
-                                            <a href="#">Product
-                                                <span>Total</span>
-                                            </a>
-                                        </li>
-                                        @foreach ($carts as $cart)
-                                            <li>
-                                                <a href="#">{{ \Str::limit($cart['product_name'], 10) }}
-                                                    <span class="middle">x {{ $cart['qty'] }}</span>
-                                                    <span
-                                                        class="last">Rp {{ number_format($cart['product_price']) }}</span>
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                    <ul class="list list_2">
-                                        <li>
-                                            <a href="#">Subtotal
-                                                <span>Rp {{ number_format($subtotal) }}</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#">Pengiriman
-                                                <span>Rp 0</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#">Total
-                                                <span>Rp {{ number_format($subtotal) }}</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <button class="main_btn">Bayar Pesanan</button>
-
-                                </div>
-                            </div>
                         </form>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="order_box">
+                            <h2>Ringkasan Pesanan</h2>
+                            <ul class="list">
+                                <li>
+                                    <a href="#">Product
+                                        <span>Total</span>
+                                    </a>
+                                </li>
+                                @foreach ($carts as $cart)
+                                    <li>
+                                        <a href="#">{{ \Str::limit($cart['product_name'], 10) }}
+                                            <span class="middle">x {{ $cart['qty'] }}</span>
+                                            <span class="last">Rp {{ number_format($cart['product_price']) }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <ul class="list list_2">
+                                <li>
+                                    <a href="#">Subtotal
+                                        <span>Rp {{ number_format($subtotal) }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">Pengiriman
+                                        <span id="ongkir">Rp 0</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">Total
+                                        <span id="total">Rp {{ number_format($subtotal) }}</span>
+                                    </a>
+                                </li>
+                            </ul>
+                            <button class="main_btn">Bayar Pesanan</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -148,7 +139,7 @@
 @section('js')
     <script>
 
-        $('#province_id').on('change', function () {
+        $("#province_id").on('change', function(){
             $.ajax({
                 url: "{{ url('/api/city') }}",
                 type: "GET",
@@ -161,7 +152,7 @@
                     })
                 }
             });
-        })
+        });
 
         $('#city_id').on('change', function () {
             $.ajax({

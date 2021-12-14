@@ -76,7 +76,7 @@ class CartController extends Controller
         });
 
         // LOAD VIEW CART.BLADE.PHP DAN PASSING DATA CARTS DAN SUBTOTAL
-        return view('ecommerce.cart', compact('carts', $subtotal));
+        return view('ecommerce.cart', compact('carts', 'subtotal'));
     }
 
     public function updateCart(Request $request)
@@ -113,12 +113,12 @@ class CartController extends Controller
         $carts = $this->getCarts();
 
         // MENGHITUNG SUBTOTAL DARI KERANJANG BELANJA (CART)
-        $subTotal = collect($carts)->sum(function ($q) {
+        $subtotal = collect($carts)->sum(function ($q) {
             return $q['qty'] * $q['product_price'];
         });
 
         // ME-LOAD VIEW CHECKOUT.BLADE.PHP DAN PASSING DATA PROVINCES, CARTS DAN SUBTOTAL
-        return view('ecommerce.checkout', compact('provinces', 'carts', 'subTotal'));
+        return view('ecommerce.checkout', compact('provinces', 'carts', 'subtotal'));
     }
 
     public function getCity()
