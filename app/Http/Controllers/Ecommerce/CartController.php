@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\Province;
+use GuzzleHttp\Client;
 use http\Exception;
 use Illuminate\Http\Request;
 use Cookie;
@@ -54,7 +55,8 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'product_name' => $product->price,
                 'product_price' => $product->price,
-                'product_image' => $product->image
+                'product_image' => $product->image,
+                'weight' => $product->weight
             ];
         }
 
@@ -117,8 +119,12 @@ class CartController extends Controller
             return $q['qty'] * $q['product_price'];
         });
 
+        $weight = collect($carts)->sum(function ($q) {
+            return $q['qty'] * $q['weight'];
+        });
+
         // ME-LOAD VIEW CHECKOUT.BLADE.PHP DAN PASSING DATA PROVINCES, CARTS DAN SUBTOTAL
-        return view('ecommerce.checkout', compact('provinces', 'carts', 'subtotal'));
+        return view('ecommerce.checkout', compact('provinces', 'carts', 'subtotal' , 'weight'));
     }
 
     public function getCity()
@@ -261,5 +267,32 @@ class CartController extends Controller
 
         // LOAD VIEW checkout_finish.blade.php DAN PASSING DATA ORDER
         return view('ecommerce.checkout_finish', compact('order'));
+    }
+
+    public function getCourier(Request $request)
+    {
+        $this->validate($request, [
+            'destination' => 'required',
+            'weight' => 'required|integer'
+        ]);
+
+        // hati2 menggunakan Authorization.
+
+        $url = 'http://api.rajaongkir.com/starter/cost';
+        $client = new CLient();
+        $response = $client->request('POST', $url, [
+            'headers' => [
+                'key' => '95f6ec0b350a02add464c17920c44065'
+            ],
+            'form_params' => [
+                'origin' => 318,
+                'destination' => $request->destination,
+                'weight' => $request->weight,
+                'courier' => 'jne'
+            ]
+        ]);
+
+        $body = json_decode($response->getBody(), true);
+        return $body;
     }
 }

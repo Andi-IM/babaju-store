@@ -21,13 +21,17 @@
     <link rel="stylesheet" href="{{ asset('ecommerce/css/responsive.css') }}">
     <style>
         .menu-sidebar-area {
-            list-style-type:none; padding-left: 0; font-size: 15pt;
+            list-style-type: none;
+            padding-left: 0;
+            font-size: 15pt;
         }
+
         .menu-sidebar-area > li {
-            margin:0 0 10px 0;
-            list-style-position:inside;
+            margin: 0 0 10px 0;
+            list-style-position: inside;
             border-bottom: 1px solid black;
         }
+
         .menu-sidebar-area > li > a {
             color: black
         }
@@ -259,5 +263,6 @@
 <script src="{{ asset('ecommerce/vendors/counter-up/jquery.counterup.js') }}"></script>
 <script src="{{ asset('ecommerce/js/mail-script.js') }}"></script>
 <script src="{{ asset('ecommerce/js/theme.js') }}"></script>
+@yield('js')
 </body>
 </html>

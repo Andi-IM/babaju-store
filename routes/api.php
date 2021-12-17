@@ -18,6 +18,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('city', 'Ecommerce\CartController@getCity');
-Route::get('district', 'Ecommerce\CartController@getDistrict');
-Route::post('cost', 'Ecommerce\CartController@getCourier');
+Route::get('city', [\App\Http\Controllers\Ecommerce\CartController::class, 'getCity']);
+Route::get('district', [\App\Http\Controllers\Ecommerce\CartController::class, 'getDistrict']);
+Route::post('cost', [\App\Http\Controllers\Ecommerce\CartController::class, 'getCourier']);

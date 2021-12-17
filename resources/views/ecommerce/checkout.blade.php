@@ -26,6 +26,7 @@
     <section class="checkout_area section_gap">
         <div class="container">
             <div class="billing_details">
+                <form class="row contact_form" action="{{ route('front.store_checkout') }}" method="post" novalidate="novalidate">
                 <div class="row">
                     <div class="col-lg-8">
                         <h3>Informasi Pengiriman</h3>
@@ -34,8 +35,7 @@
                             <div class="alert alert-danger">{{ session('error') }}</div>
                         @endif
 
-                        <form class="row contact_form" action="{{ route('front.store_checkout') }}" method="post"
-                              novalidate="novalidate">
+
                             @csrf
                             <div class="col-md-12 form-group p_star">
                                 <label for="">Nama Lengkap</label>
@@ -88,7 +88,14 @@
                                 </select>
                                 <p class="text-danger">{{ $errors->first('district_id') }}</p>
                             </div>
-                        </form>
+                            <div class="col-md-12 form-group p_star">
+                                <label for="">Kurir</label>
+                                <input type="hidden" name="weight" id="weight" value="{{ $weight }}">
+                                <select class="form-control" name="courier" id="courier" required>
+                                    <option value="">Pilih Kurir</option>
+                                </select>
+                                <p class="text-danger">{{ $errors->first('courier') }}</p>
+                            </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="order_box">
@@ -126,10 +133,11 @@
                                 </li>
                             </ul>
                             <button class="main_btn">Bayar Pesanan</button>
-                            </form>
+
                         </div>
                     </div>
                 </div>
+                </form>
             </div>
         </div>
     </section>
@@ -138,7 +146,6 @@
 
 @section('js')
     <script>
-
         $("#province_id").on('change', function(){
             $.ajax({
                 url: "{{ url('/api/city') }}",
@@ -154,19 +161,48 @@
             });
         });
 
-        $('#city_id').on('change', function () {
+        $('#city_id').on('change', function() {
             $.ajax({
                 url: "{{ url('/api/district') }}",
                 type: "GET",
-                data: {city_id: $(this).val()},
-                success: function (html) {
+                data: { city_id: $(this).val() },
+                success: function(html){
                     $('#district_id').empty()
                     $('#district_id').append('<option value="">Pilih Kecamatan</option>')
-                    $.each(html.data, function (key, item) {
-                        $('#district_id').append('<option value="' + item.id + '">' + item.name + '</option>')
-                    })
+                    $.each(html.data, function(key, item) {
+                        $('#district_id').append('<option value="'+item.id+'">'+item.name+'</option>')
+                    });
                 }
             });
-        })
+        });
+
+        $('#district_id').on('change', function() {
+
+            $('#courier').empty()
+            $('#courier').append('<option value="">Loading...</option>')
+            $.ajax({
+                url: "{{ url('/api/cost') }}",
+                type: "POST",
+                data: { destination: $('#city_id').val(), weight: $('#weight').val() },
+                success: function(html){
+                    $('#courier').empty()
+                    $('#courier').append('<option value="">Pilih Kurir</option>')
+                    $.each(html.rajaongkir.results[0].costs, function(key, item) {
+                        let courier = 'JNE' + ' - ' + item.service + ' (Rp '+ item.cost[0].value +')'
+                        let value = 'JNE' + '-' + item.service + '-'+ item.cost[0].value
+                        $('#courier').append('<option value="'+value+'">' + courier + '</option>')
+                    });
+                }
+            });
+
+        });
+
+        $('#courier').on('change', function() {
+            let split = $(this).val().split('-')
+            $('#ongkir').text('Rp ' + split[2])
+            let subtotal = "{{ $subtotal }}"
+            let total = parseInt(subtotal) + parseInt(split['2'])
+            $('#total').text('Rp' + total)
+        });
     </script>
 @endsection

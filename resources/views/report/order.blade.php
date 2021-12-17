@@ -35,7 +35,7 @@
                                     </div>
                                 </form>
                                 <div class="table-responsive">
-                                    <table class="table-bordered">
+                                    <table class="table table-hover table-bordered">
                                         <thead>
                                         <tr>
                                             <th>InvoiceID</th>
