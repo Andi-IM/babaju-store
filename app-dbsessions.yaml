@@ -1,0 +1,19 @@
+runtime: php74
+
+env_variables:
+  ## Put production environment variables here.
+  APP_KEY: base64:DLc9KFLSedUDqL0kwa+sclcFRlnHkTX/NVpwCQuVo0A=
+  APP_STORAGE: /tmp
+  VIEW_COMPILED_PATH: /tmp
+  CACHE_DRIVER: database
+  SESSION_DRIVER: database
+  ## Set these environment variables according to your CloudSQL configuration.
+  DB_DATABASE: babaju-db
+  DB_USERNAME: root
+  DB_PASSWORD: instance-babaju
+  DB_SOCKET: "/cloudsql/deft-envoy-335412:asia-southeast2:babaju-instance"
+
+  ## To use Stackdriver logging in your Laravel application, copy
+  ## "app/Logging/CreateStackdriverLogger.php" and "config/logging.php"
+  ## into your Laravel application. Then uncomment the following line:
+  # LOG_CHANNEL: stackdriver

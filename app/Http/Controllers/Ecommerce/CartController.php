@@ -14,10 +14,10 @@ use App\Models\Province;
 use GuzzleHttp\Client;
 use http\Exception;
 use Illuminate\Http\Request;
-use Cookie;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Mail;
 
 class CartController extends Controller
 {

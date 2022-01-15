@@ -13,8 +13,7 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
         "maatwebsite/excel": "^3.1",
-        "barryvdh/laravel-dompdf": "^0.9.0",
-        "ext-http": "*"
+        "barryvdh/laravel-dompdf": "^0.9.0"
     },
     "require-dev": {
         "ext-json": "*",

@@ -46,6 +46,7 @@ Route::get('/product/ref/{user}/{product}', [FrontController::class, 'referralPr
  */
 Route::group(['prefix' => 'member', 'namespace' => 'Ecommerce'], function () {
     Route::get('login', [\App\Http\Controllers\Ecommerce\LoginController::class, 'loginForm'])->name('customer.login');
+    Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, '']);
     Route::post('login', [\App\Http\Controllers\Ecommerce\LoginController::class, 'login'])->name('customer.post_login');
     Route::get('verify/{token}', [FrontController::class, 'verifyCustomerRegistration'])->name('customer.verify');
 
